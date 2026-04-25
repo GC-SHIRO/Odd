@@ -40,7 +40,7 @@ def test_config():
 def test_openai_mock():
     """Test OpenAI provider instantiation (without real call)."""
     try:
-        provider = OpenAIProvider(api_key="sk-cp-CvDLvROKASFeN3FPAraqXhjQ-MAKyIBNNqxd6EsAifLvsaszJgZd5YwrAJMXNJQux6gftmJkU9JCEneCF3IPLjDLFQbY3WUcreOhehRvGN6ZHEwwZNCRCKI")
+        provider = OpenAIProvider()
         assert isinstance(provider, ModelProvider)
         print("[OK] OpenAIProvider instantiates")
     except ImportError:
@@ -50,7 +50,7 @@ def test_openai_mock():
 def test_anthropic_mock():
     """Test Anthropic provider instantiation (without real call)."""
     try:
-        provider = AnthropicProvider(api_key="sk-cp-CvDLvROKASFeN3FPAraqXhjQ-MAKyIBNNqxd6EsAifLvsaszJgZd5YwrAJMXNJQux6gftmJkU9JCEneCF3IPLjDLFQbY3WUcreOhehRvGN6ZHEwwZNCRCKI")
+        provider = AnthropicProvider()
         assert isinstance(provider, ModelProvider)
         print("[OK] AnthropicProvider instantiates")
     except ImportError:

@@ -29,7 +29,9 @@ class AnthropicProvider(ModelProvider):
         )
         self.model = model or config.anthropic_model
 
-    def chat(self, messages: List[Message]) -> ChatResponse:
+    def chat(
+        self, messages: List[Message], tools: Optional[List[dict]] = None
+    ) -> ChatResponse:
         system_msg = ""
         convo: List[dict] = []
         for m in messages:
@@ -45,6 +47,8 @@ class AnthropicProvider(ModelProvider):
         }
         if system_msg:
             kwargs["system"] = system_msg
+        if tools:
+            kwargs["tools"] = [_to_anthropic_tool(t) for t in tools]
 
         resp = self.client.messages.create(**kwargs)
 
@@ -94,3 +98,13 @@ def _to_anthropic_msg(msg: Message) -> dict:
         return {"role": "assistant", "content": content_blocks}
 
     return {"role": msg.role.value, "content": msg.content}
+
+
+def _to_anthropic_tool(tool: dict) -> dict:
+    """Convert OpenAI-format tool to Anthropic format."""
+    func = tool.get("function", {})
+    return {
+        "name": func.get("name", ""),
+        "description": func.get("description", ""),
+        "input_schema": func.get("parameters", {}),
+    }

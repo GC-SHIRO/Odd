@@ -1,5 +1,6 @@
 """OpenAI model provider."""
 
+import json
 from typing import List, Optional
 
 from odd.config import config
@@ -29,19 +30,22 @@ class OpenAIProvider(ModelProvider):
         )
         self.model = model or config.openai_model
 
-    def chat(self, messages: List[Message]) -> ChatResponse:
+    def chat(
+        self, messages: List[Message], tools: Optional[List[dict]] = None
+    ) -> ChatResponse:
         payload = [_to_openai_msg(m) for m in messages]
-        resp = self.client.chat.completions.create(
-            model=self.model,
-            messages=payload,
-        )
+        kwargs: dict = {
+            "model": self.model,
+            "messages": payload,
+        }
+        if tools:
+            kwargs["tools"] = tools
+        resp = self.client.chat.completions.create(**kwargs)
         choice = resp.choices[0]
         content = choice.message.content or ""
         tool_calls: List[ToolCall] = []
         if choice.message.tool_calls:
             for tc in choice.message.tool_calls:
-                import json
-
                 tool_calls.append(
                     ToolCall(
                         id=tc.id,
@@ -65,7 +69,7 @@ def _to_openai_msg(msg: Message) -> dict:
             {
                 "id": tc.id,
                 "type": "function",
-                "function": {"name": tc.name, "arguments": str(tc.arguments)},
+                "function": {"name": tc.name, "arguments": json.dumps(tc.arguments)},
             }
             for tc in msg.tool_calls
         ]
