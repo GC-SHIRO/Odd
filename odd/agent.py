@@ -54,7 +54,30 @@ class Agent:
             Message(role=MessageRole.SYSTEM, content=self.system_prompt),
             Message(role=MessageRole.USER, content=task),
         ]
+        return self._react_loop(messages)
 
+    def chat(
+        self, user_input: str, messages: Optional[List[Message]] = None
+    ) -> tuple[str, List[Message]]:
+        """Execute one turn of conversation with context preservation.
+
+        Args:
+            user_input: The user's message.
+            messages: Existing conversation history. If None, a new session starts.
+
+        Returns:
+            A tuple of (final_answer, updated_messages).
+        """
+        if messages is None:
+            messages = [
+                Message(role=MessageRole.SYSTEM, content=self.system_prompt),
+            ]
+        messages.append(Message(role=MessageRole.USER, content=user_input))
+        result = self._react_loop(messages)
+        return result, messages
+
+    def _react_loop(self, messages: List[Message]) -> str:
+        """Core ReAct loop. Modifies *messages* in place."""
         for _ in range(self.max_rounds):
             api_tools = [_to_api_tool(t) for t in self.tools] if self.tools else None
             response: ChatResponse = self.model.chat(messages, tools=api_tools)
