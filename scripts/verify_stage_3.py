@@ -8,7 +8,7 @@ import os
 import sys
 from unittest.mock import MagicMock
 import dotenv
-# Load .env if present (for local dev).
+# 若存在则加载 .env（本地开发时使用）。
 dotenv.load_dotenv()
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))

@@ -1,4 +1,4 @@
-"""Core data types for Odd."""
+"""Odd 的核心数据类型。"""
 
 from dataclasses import dataclass, field
 from enum import Enum
@@ -14,7 +14,7 @@ class MessageRole(Enum):
 
 @dataclass
 class ToolCall:
-    """Represents a tool invocation requested by the model."""
+    """表示模型请求的工具调用。"""
 
     id: str
     name: str
@@ -23,7 +23,7 @@ class ToolCall:
 
 @dataclass
 class Message:
-    """A single message in the conversation."""
+    """对话中的单条消息。"""
 
     role: MessageRole
     content: str
@@ -34,8 +34,9 @@ class Message:
 
 @dataclass
 class ChatResponse:
-    """Structured response from a model provider."""
+    """来自模型提供者的结构化响应。"""
 
     content: str
     tool_calls: List[ToolCall] = field(default_factory=list)
-    raw: Optional[Any] = None  # provider-specific raw response
+    thinking: Optional[str] = None  # 模型推理 / 思维链
+    raw: Optional[Any] = None  # 提供者特定的原始响应

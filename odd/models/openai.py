@@ -1,4 +1,4 @@
-"""OpenAI model provider."""
+"""OpenAI 模型提供者。"""
 
 import json
 from typing import List, Optional
@@ -9,7 +9,7 @@ from odd.types import ChatResponse, Message, MessageRole, ToolCall
 
 
 class OpenAIProvider(ModelProvider):
-    """Wrapper around OpenAI-compatible APIs."""
+    """OpenAI 兼容 API 的封装。"""
 
     def __init__(
         self,
@@ -43,6 +43,7 @@ class OpenAIProvider(ModelProvider):
         resp = self.client.chat.completions.create(**kwargs)
         choice = resp.choices[0]
         content = choice.message.content or ""
+        thinking = getattr(choice.message, "reasoning_content", None)
         tool_calls: List[ToolCall] = []
         if choice.message.tool_calls:
             for tc in choice.message.tool_calls:
@@ -53,11 +54,16 @@ class OpenAIProvider(ModelProvider):
                         arguments=json.loads(tc.function.arguments),
                     )
                 )
-        return ChatResponse(content=content, tool_calls=tool_calls, raw=resp)
+        return ChatResponse(
+            content=content,
+            tool_calls=tool_calls,
+            thinking=thinking,
+            raw=resp,
+        )
 
 
 def _to_openai_msg(msg: Message) -> dict:
-    """Convert internal Message to OpenAI chat format."""
+    """将内部 Message 转换为 OpenAI 聊天格式。"""
     base = {"role": msg.role.value}
     if msg.role == MessageRole.TOOL:
         base["content"] = msg.content

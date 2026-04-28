@@ -1,3 +1,3 @@
-"""Odd: A minimal Python Agent built from scratch."""
+"""Odd：从零构建的极简 Python Agent。"""
 
 __version__ = "0.1.0"

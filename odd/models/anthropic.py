@@ -1,4 +1,4 @@
-"""Anthropic model provider."""
+"""Anthropic 模型提供者。"""
 
 from typing import List, Optional
 
@@ -8,7 +8,7 @@ from odd.types import ChatResponse, Message, MessageRole, ToolCall
 
 
 class AnthropicProvider(ModelProvider):
-    """Wrapper around Anthropic's Claude API."""
+    """Anthropic Claude API 的封装。"""
 
     def __init__(
         self,
@@ -53,10 +53,15 @@ class AnthropicProvider(ModelProvider):
         resp = self.client.messages.create(**kwargs)
 
         content = ""
+        thinking_parts: List[str] = []
         tool_calls: List[ToolCall] = []
         for block in resp.content:
             if block.type == "text":
                 content += block.text
+            elif block.type == "thinking":
+                thinking_parts.append(block.thinking)
+            elif block.type == "redacted_thinking":
+                thinking_parts.append("[redacted thinking]")
             elif block.type == "tool_use":
                 tool_calls.append(
                     ToolCall(
@@ -65,11 +70,16 @@ class AnthropicProvider(ModelProvider):
                         arguments=block.input,
                     )
                 )
-        return ChatResponse(content=content, tool_calls=tool_calls, raw=resp)
+        return ChatResponse(
+            content=content,
+            tool_calls=tool_calls,
+            thinking="\n".join(thinking_parts) if thinking_parts else None,
+            raw=resp,
+        )
 
 
 def _to_anthropic_msg(msg: Message) -> dict:
-    """Convert internal Message to Anthropic message format."""
+    """将内部 Message 转换为 Anthropic 消息格式。"""
     if msg.role == MessageRole.TOOL:
         return {
             "role": "user",
@@ -101,7 +111,7 @@ def _to_anthropic_msg(msg: Message) -> dict:
 
 
 def _to_anthropic_tool(tool: dict) -> dict:
-    """Convert OpenAI-format tool to Anthropic format."""
+    """将 OpenAI 格式工具转换为 Anthropic 格式。"""
     func = tool.get("function", {})
     return {
         "name": func.get("name", ""),

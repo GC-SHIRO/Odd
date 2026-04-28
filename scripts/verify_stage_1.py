@@ -1,12 +1,12 @@
-"""Verify Stage 1: Model Layer."""
+"""验证阶段 1：模型调用层。"""
 
 import os
 from dotenv import load_dotenv
 import sys
 
-# Load .env if present (for local dev).
+# 若存在则加载 .env（本地开发时使用）。
 load_dotenv()
-# Allow importing odd from repo root.
+# 允许从仓库根目录导入 odd。
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
 from odd.types import Message, MessageRole, ToolCall
@@ -38,7 +38,7 @@ def test_config():
 
 
 def test_openai_mock():
-    """Test OpenAI provider instantiation (without real call)."""
+    """测试 OpenAI 提供者实例化（不发起真实调用）。"""
     try:
         provider = OpenAIProvider()
         assert isinstance(provider, ModelProvider)
@@ -48,7 +48,7 @@ def test_openai_mock():
 
 
 def test_anthropic_mock():
-    """Test Anthropic provider instantiation (without real call)."""
+    """测试 Anthropic 提供者实例化（不发起真实调用）。"""
     try:
         provider = AnthropicProvider()
         assert isinstance(provider, ModelProvider)

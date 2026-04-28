@@ -1,4 +1,4 @@
-"""Abstract base class for model providers."""
+"""模型提供者的抽象基类。"""
 
 from abc import ABC, abstractmethod
 from typing import List, Optional
@@ -7,16 +7,16 @@ from odd.types import ChatResponse, Message
 
 
 class ModelProvider(ABC):
-    """Interface for LLM backends."""
+    """LLM 后端的接口。"""
 
     @abstractmethod
     def chat(
         self, messages: List[Message], tools: Optional[List[dict]] = None
     ) -> ChatResponse:
-        """Send messages to the model and return a structured response.
+        """发送消息给模型并返回结构化响应。
 
-        Args:
-            messages: Conversation history.
-            tools: Optional list of tool definitions in OpenAI-compatible format.
+        参数:
+            messages: 对话历史。
+            tools: 可选的工具定义列表，使用 OpenAI 兼容格式。
         """
         ...

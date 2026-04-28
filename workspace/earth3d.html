@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3D 地球</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            overflow: hidden;
+            background: #000;
+        }
+        canvas {
+            display: block;
+        }
+        #info {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: #fff;
+            font-family: Arial, sans-serif;
+            font-size: 14px;
+            text-align: center;
+            opacity: 0.7;
+        }
+    </style>
+</head>
+<body>
+    <div id="info">🌍 拖动鼠标旋转 · 滚轮缩放</div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/examples/js/controls/OrbitControls.js"></script>
+    
+    <script>
+        // 场景设置
+        const scene = new THREE.Scene();
+        
+        // 相机设置
+        const camera = new THREE.PerspectiveCamera(
+            60,
+            window.innerWidth / window.innerHeight,
+            0.1,
+            1000
+        );
+        camera.position.z = 2.5;
+
+        // 渲染器设置
+        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setPixelRatio(window.devicePixelRatio);
+        document.body.appendChild(renderer.domElement);
+
+        // 控制器
+        const controls = new THREE.OrbitControls(camera, renderer.domElement);
+        controls.enableDamping = true;
+        controls.dampingFactor = 0.05;
+        controls.minDistance = 1.5;
+        controls.maxDistance = 10;
+
+        // 创建地球
+        const textureLoader = new THREE.TextureLoader();
+        
+        // 加载地球纹理
+        const earthTexture = textureLoader.load(
+            'https://unpkg.com/three-globe@2.31.0/example/img/earth-blue-marble.jpg',
+            () => {
+                // 加载完成后的回调
+            },
+            undefined,
+            (error) => {
+                console.log('纹理加载失败，使用备用方案');
+            }
+        );
+
+        // 创建地球几何体
+        const geometry = new THREE.SphereGeometry(1, 64, 64);
+        
+        // 创建材质
+        const material = new THREE.MeshPhongMaterial({
+            map: earthTexture,
+            bumpScale: 0.05,
+            specular: new THREE.Color(0x333333),
+            shininess: 5
+        });
+
+        const earth = new THREE.Mesh(geometry, material);
+        scene.add(earth);
+
+        // 创建云层
+        const cloudTexture = textureLoader.load(
+            'https://unpkg.com/three-globe@2.31.0/example/img/earth-clouds.png'
+        );
+        
+        const cloudGeometry = new THREE.SphereGeometry(1.01, 64, 64);
+        const cloudMaterial = new THREE.MeshPhongMaterial({
+            map: cloudTexture,
+            transparent: true,
+            opacity: 0.3
+        });
+        
+        const clouds = new THREE.Mesh(cloudGeometry, cloudMaterial);
+        scene.add(clouds);
+
+        // 添加星空背景
+        const starGeometry = new THREE.BufferGeometry();
+        const starCount = 10000;
+        const positions = new Float32Array(starCount * 3);
+        
+        for (let i = 0; i < starCount * 3; i += 3) {
+            positions[i] = (Math.random() - 0.5) * 200;
+            positions[i + 1] = (Math.random() - 0.5) * 200;
+            positions[i + 2] = (Math.random() - 0.5) * 200;
+        }
+        
+        starGeometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+        
+        const starMaterial = new THREE.PointsMaterial({
+            color: 0xffffff,
+            size: 0.7,
+            sizeAttenuation: true
+        });
+        
+        const stars = new THREE.Points(starGeometry, starMaterial);
+        scene.add(stars);
+
+        // 光照设置
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
+        scene.add(ambientLight);
+
+        const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
+        directionalLight.position.set(5, 3, 5);
+        scene.add(directionalLight);
+
+        const backLight = new THREE.DirectionalLight(0x4444ff, 0.3);
+        backLight.position.set(-5, -3, -5);
+        scene.add(backLight);
+
+        // 动画循环
+        function animate() {
+            requestAnimationFrame(animate);
+            
+            // 地球自转
+            earth.rotation.y += 0.002;
+            clouds.rotation.y += 0.001;
+            
+            // 星空旋转（非常慢）
+            stars.rotation.y += 0.0001;
+            
+            controls.update();
+            renderer.render(scene, camera);
+        }
+
+        animate();
+
+        // 窗口大小调整
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+    </script>
+</body>
+</html>
